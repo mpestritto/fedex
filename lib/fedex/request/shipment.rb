@@ -37,7 +37,9 @@ module Fedex
       # Add information for shipments
       def add_requested_shipment(xml)
         xml.RequestedShipment{
-          xml.ShipTimestamp Time.now.utc.iso8601(2)
+          timestamp = @shipping_options[:timestamp].iso8601(2) if @shipping_options[:timestamp]
+          timestamp ||= DateTime.now.iso8601(2)
+          xml.ShipTimestamp timestamp
           xml.DropoffType @shipping_options[:drop_off_type] ||= "REGULAR_PICKUP"
           xml.ServiceType service_type
           xml.PackagingType @shipping_options[:packaging_type] ||= "YOUR_PACKAGING"
