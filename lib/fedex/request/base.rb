@@ -44,7 +44,7 @@ module Fedex
       def initialize(credentials, options={})
         requires!(options, :shipper, :recipient, :packages, :service_type)
         @credentials = credentials
-        @shipper, @recipient, @packages, @service_type, @customs_clearance, @debug = options[:shipper], options[:recipient], options[:packages], options[:service_type], options[:customs_clearance], options[:debug]
+        @shipper, @recipient, @shipping_charges_payment, @packages, @service_type, @customs_clearance, @debug = options[:shipper], options[:recipient], options[:shipping_charges_payment], options[:packages], options[:service_type], options[:customs_clearance], options[:debug]
         @debug = ENV['DEBUG'] == 'true'
         @shipping_options =  options[:shipping_options] ||={}
       end
@@ -146,13 +146,25 @@ module Fedex
 
       # Add shipping charges to xml request
       def add_shipping_charges_payment(xml)
-        xml.ShippingChargesPayment{
-          xml.PaymentType "SENDER"
-          xml.Payor{
-            xml.AccountNumber @credentials.account_number
-            xml.CountryCode @shipper[:country_code]
+        if @shipping_charges_payment[:payor_account_number].nil?
+          #When payment Type is SENDER, ShippingChargesPayment Payor AccountNumber
+          ##should match the shipper account number
+          xml.ShippingChargesPayment{
+            xml.PaymentType "SENDER"
+            xml.Payor{
+              xml.AccountNumber @shipper[:account_number]
+              xml.CountryCode @shipper[:country_code]
+            }
           }
-        }
+        else
+          xml.ShippingChargesPayment{
+            xml.PaymentType "THIRD_PARTY"
+            xml.Payor{
+              xml.AccountNumber @shipping_charges_payment[:payor_account_number]
+              xml.CountryCode @shipping_charges_payment[:payor_country] || @shipper[:country_code]
+            }
+          }
+        end
       end
 
       # Add packages to xml request
