@@ -46,6 +46,9 @@ module Fedex
           add_shipper(xml)
           add_recipient(xml)
           add_shipping_charges_payment(xml)
+          xml.DeliveryInstructions {
+            @shipping_options[:delivery_instructions]
+          }
           add_customs_clearance(xml) if @customs_clearance
           add_custom_components(xml)
           xml.RateRequestTypes "ACCOUNT"
