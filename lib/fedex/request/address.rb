@@ -17,8 +17,10 @@ module Fedex
         response = parse_response(api_response)
         if success?(response)
           options = response[:address_validation_reply][:address_results][:proposed_address_details]
+          #proposed_address_details can be a hash or an array of hashes (multiple addresses proposed)
+          proposed_addresses = options.is_a?(Array)? options : [options]
+          proposed_addresses.collect{ |address| Fedex::Address.new(address) }
 
-          Fedex::Address.new(options)
         else
           error_message = if response[:address_validation_reply]
             [response[:address_validation_reply][:notifications]].flatten.first[:message]
