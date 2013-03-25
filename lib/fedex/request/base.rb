@@ -152,16 +152,21 @@ module Fedex
           xml.ShippingChargesPayment{
             xml.PaymentType "SENDER"
             xml.Payor{
-              xml.AccountNumber @shipper[:account_number]
-              xml.CountryCode @shipper[:country_code]
+              xml.ResponsibleParty {
+                xml.AccountNumber @shipper[:account_number]
+              }
             }
           }
         else
           xml.ShippingChargesPayment{
             xml.PaymentType "THIRD_PARTY"
             xml.Payor{
-              xml.AccountNumber @shipping_charges_payment[:payor_account_number]
-              xml.CountryCode @shipping_charges_payment[:payor_country] || @shipper[:country_code]
+              xml.ResponsibleParty {
+                xml.AccountNumber @shipping_charges_payment[:payor_account_number]
+                xml.Contact {
+
+                }
+              }
             }
           }
         end
@@ -186,13 +191,13 @@ module Fedex
                 xml.Units package[:dimensions][:units]
               }
             end
-            if package[:customer_refrences]
-              xml.CustomerReferences{
-              package[:customer_refrences].each do |value|
-                 xml.CustomerReferenceType 'CUSTOMER_REFERENCE'
+            if package[:customer_references]
+              package[:customer_references].each do |key,value|
+                xml.CustomerReferences{
+                 xml.CustomerReferenceType key.upcase
                  xml.Value                 value
+                }
               end
-              }
             end
             if package[:special_services_requested] && package[:special_services_requested][:special_service_types]
               xml.SpecialServicesRequested{
