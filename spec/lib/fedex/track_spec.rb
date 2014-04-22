@@ -42,7 +42,7 @@ module Fedex
       it "reports the status of the package" do
         tracking_info = fedex.track(options)
 
-        tracking_info.status.should == "Delivered"
+        tracking_info.status.should == "DL"
       end
 
     end
